@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Year Dare</title>
+    <style>
+        /* Styles remain the same */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(to right, #ff7e5f, #feb47b);
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            max-width: 400px;
+            text-align: center;
+            width: 90%;
+            margin: 20px;
+        }
+
+        h1 {
+            color: #ff7e5f;
+            font-size: 2rem;
+            margin-bottom: 20px;
+        }
+
+        input[type="text"], input[type="number"] {
+            width: 90%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        button {
+            background: #ff7e5f;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background: #feb47b;
+        }
+
+        .dare-box {
+            margin-top: 20px;
+            background: #ff7e5f;
+            color: white;
+            padding: 15px;
+            border-radius: 5px;
+            font-size: 1.2rem;
+        }
+
+        .proof-box {
+            margin-top: 20px;
+        }
+
+        .global-dares {
+            margin-top: 30px;
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            width: 90%;
+            max-width: 600px;
+        }
+
+        .global-dares h2 {
+            color: #ff7e5f;
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+
+        .global-dares ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .global-dares li {
+            background: #ff7e5f;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            button {
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>New Year Dare!</h1>
+        <form id="dareForm">
+            <input type="text" id="name" placeholder="Enter your name" required>
+            <input type="number" id="age" placeholder="Enter your age" required>
+            <button type="submit">Get Your Dare</button>
+        </form>
+        <div id="dareResult" class="dare-box" style="display: none;"></div>
+        <div class="proof-box" id="proofBox" style="display: none;">
+            <p>Share proof on WhatsApp with the person who shared this link!</p>
+        </div>
+    </div>
+
+    <div class="global-dares" id="globalDares">
+        <h2>Global Dares</h2>
+        <ul id="dareList"></ul>
+    </div>
+
+    <!-- Firebase Integration -->
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database.js"></script>
+    <script>
+        // Firebase configuration
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-app.js";
+        import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_AUTH_DOMAIN",
+            databaseURL: "YOUR_DATABASE_URL",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_STORAGE_BUCKET",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID",
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        const dareForm = document.getElementById('dareForm');
+        const dareResult = document.getElementById('dareResult');
+        const proofBox = document.getElementById('proofBox');
+        const dareList = document.getElementById('dareList');
+
+        const dares = [
+            "Sing a song and send a voice note!",
+            "Do 10 push-ups and share a video!",
+            "Share a picture of your first selfie!",
+            "Dance for 30 seconds and record it!",
+            "Compliment 3 people today!",
+            "Share a photo of your favorite childhood memory!",
+            "Write a poem and send it!",
+            "Share a joke and make someone laugh!",
+            "Mimic your favorite movie character and send a video!",
+            "Eat a lemon slice and record your reaction!",
+            "Speak in a funny accent for 1 minute and record it!",
+            "Call a friend and say 'Happy New Year' in 5 different languages!",
+            "Create a funny TikTok dance and share it!",
+            "Do 20 jumping jacks and record it!",
+            "Tell a funny story to someone and record their reaction!",
+            "Draw a funny picture and share it!",
+            "Pretend to be a cat for 2 minutes and record it!",
+            "Do a magic trick and share the video!",
+            "Say 'Happy New Year' backward and record it!",
+            "Talk to one person who is not your friend anymore in 2024"
+        ];
+
+        dareForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const name = document.getElementById('name').value;
+            const age = document.getElementById('age').value;
+
+            if (name && age) {
+                const randomDare = dares[Math.floor(Math.random() * dares.length)];
+                dareResult.textContent = `${name}, your dare is: ${randomDare}`;
+                dareResult.style.display = 'block';
+                proofBox.style.display = 'block';
+
+                // Save to Firebase
+                const dareData = { name, age, dare: randomDare };
+                const dareRef = ref(db, 'globalDares');
+                push(dareRef, dareData);
+            } else {
+                alert('Please fill in both your name and age!');
+            }
+        });
+
+        // Fetch global dares from Firebase
+        const dareRef = ref(db, 'globalDares');
+        onValue(dareRef, (snapshot) => {
+            dareList.innerHTML = '';
+            snapshot.forEach((childSnapshot) => {
+                const data = childSnapshot.val();
+                const listItem = document.createElement('li');
+                listItem.textContent = `${data.name} (${data.age} years old): ${data.dare}`;
+                dareList.appendChild(listItem);
+            });
+        });
+    </script>
+</body>
+</html>
