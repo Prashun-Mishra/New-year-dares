@@ -133,68 +133,81 @@
     <!-- Firebase Integration -->
     <!-- <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script> -->
-    
-    <script>
-        // Firebase configuration
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-app.js";
-        import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-database.js";
-
+    <script type="module">
+        // Import Firebase from CDN
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.17.1/firebase-app.js';
+        import { getDatabase, ref, push, onValue } from 'https://www.gstatic.com/firebasejs/9.17.1/firebase-database.js';
 
         const firebaseConfig = {
-    apiKey: "AIzaSyBXi8pjXfdFLLhQq4R9b5vp9haxCedqLzI",
-    authDomain: "new-year-dare-s-by-mprashun.firebaseapp.com",
-    databaseURL: "https://new-year-dare-s-by-mprashun-default-rtdb.firebaseio.com",
-    projectId: "new-year-dare-s-by-mprashun",
-    storageBucket: "new-year-dare-s-by-mprashun.firebasestorage.app",
-    messagingSenderId: "420624263370",
-    appId: "1:420624263370:web:7b6b102002920f9967ac33",
-    measurementId: "G-MB4LZJB3MB"
-  };
+            apiKey: "AIzaSyBXi8pjXfdFLLhQq4R9b5vp9haxCedqLzI",
+            authDomain: "new-year-dare-s-by-mprashun.firebaseapp.com",
+            databaseURL: "https://new-year-dare-s-by-mprashun-default-rtdb.firebaseio.com",
+            projectId: "new-year-dare-s-by-mprashun",
+            storageBucket: "new-year-dare-s-by-mprashun.firebasestorage.app",
+            messagingSenderId: "420624263370",
+            appId: "1:420624263370:web:7b6b102002920f9967ac33"
+        };
 
-
-
-  const app = initializeApp(firebaseConfig);
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // Add error handling
-        const dareForm = document.getElementById('dareForm');
-        const dareResult = document.getElementById('dareResult');
-        const proofBox = document.getElementById('proofBox');
-        const dareList = document.getElementById('dareList');
+        const dares = [
+            "Sing a song and send a voice note!",
+            "Do 10 push-ups and share a video!",
+            "Share a picture of your first selfie!",
+            "Dance for 30 seconds and record it!",
+            "Compliment 3 people today!",
+            "Share a photo of your favorite childhood memory!",
+            "Write a poem and send it!",
+            "Share a joke and make someone laugh!",
+            "Mimic your favorite movie character and send a video!",
+            "Eat a lemon slice and record your reaction!",
+            "Speak in a funny accent for 1 minute and record it!",
+            "Call a friend and say 'Happy New Year' in 5 different languages!",
+            "Create a funny TikTok dance and share it!",
+            "Do 20 jumping jacks and record it!",
+            "Tell a funny story to someone and record their reaction!",
+            "Draw a funny picture and share it!",
+            "Pretend to be a cat for 2 minutes and record it!",
+            "Do a magic trick and share the video!",
+            "Say 'Happy New Year' backward and record it!",
+            "Talk to one person who is not your friend anymore in 2024"
+        ];
 
-        dareForm.addEventListener('submit', async function(event) {
+        document.getElementById('dareForm').addEventListener('submit', function(event) {
             event.preventDefault();
-            try {
-                const name = document.getElementById('name').value;
-                const age = document.getElementById('age').value;
 
-                if (name && age) {
-                    const randomDare = dares[Math.floor(Math.random() * dares.length)];
-                    dareResult.textContent = `${name}, your dare is: ${randomDare}`;
-                    dareResult.style.display = 'block';
-                    proofBox.style.display = 'block';
+            const name = document.getElementById('name').value;
+            const age = document.getElementById('age').value;
 
-                    await push(ref(db, 'globalDares'), { name, age, dare: randomDare });
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                alert('Something went wrong. Please try again.');
+            if (name && age) {
+                const randomDare = dares[Math.floor(Math.random() * dares.length)];
+                const dareResult = document.getElementById('dareResult');
+                const proofBox = document.getElementById('proofBox');
+                
+                dareResult.textContent = `${name}, your dare is: ${randomDare}`;
+                dareResult.style.display = 'block';
+                proofBox.style.display = 'block';
+
+                // Save to Firebase
+                const dareRef = ref(db, 'globalDares');
+                push(dareRef, { name, age, dare: randomDare });
             }
         });
 
-        // Fetch global dares with error handling
-        onValue(ref(db, 'globalDares'), (snapshot) => {
-            try {
-                dareList.innerHTML = '';
-                snapshot.forEach((childSnapshot) => {
-                    const data = childSnapshot.val();
-                    const listItem = document.createElement('li');
-                    listItem.textContent = `${data.name} (${data.age} years old): ${data.dare}`;
-                    dareList.appendChild(listItem);
-                });
-            } catch (error) {
-                console.error('Error fetching dares:', error);
-            }
+        // Load global dares
+        const dareRef = ref(db, 'globalDares');
+        onValue(dareRef, (snapshot) => {
+            const dareList = document.getElementById('dareList');
+            dareList.innerHTML = '';
+            
+            snapshot.forEach((childSnapshot) => {
+                const data = childSnapshot.val();
+                const listItem = document.createElement('li');
+                listItem.textContent = `${data.name} (${data.age} years old): ${data.dare}`;
+                dareList.appendChild(listItem);
+            });
         });
     </script>
 </body>
